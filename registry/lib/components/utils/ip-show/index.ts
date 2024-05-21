@@ -9,6 +9,27 @@ const getIpLocation = (item: CommentReplyItem) => {
   return reply?.reply_control?.location ?? undefined
 }
 
+function formatNumber(number:number) {
+  return number < 10 ? '0' + number : number;
+}
+
+// 新版评论区时间获取
+const getCommentTime = (item: CommentReplyItem) => {
+  const reply = item.vueProps
+ 
+  // 创建一个新的 Date 对象
+  let date = new Date(reply.ctime*1000);
+
+  var year = date.getFullYear();
+  var month = date.getMonth() + 1;
+  var day = date.getDate();
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  var seconds = date.getSeconds();
+  
+  return year + '-' + formatNumber(month) + '-' + formatNumber(day) + ' ' + formatNumber(hours) + ':' + formatNumber(minutes) + ':' + formatNumber(seconds);
+}
+
 let version = 2
 let bbComment: any
 
@@ -270,13 +291,14 @@ const processItems = (items: CommentReplyItem[]) => {
     const location = getIpLocation(item)
     if (location !== undefined) {
       const replyTime =
-        item.element.querySelector('.reply-info>.reply-time') ??
-        item.element.querySelector('.sub-reply-info>.sub-reply-time')
+        item.element.querySelector('.reply-info>.reply-time') as HTMLSpanElement ??
+        item.element.querySelector('.sub-reply-info>.sub-reply-time') as HTMLSpanElement     
       if (replyTime.childElementCount === 0) {
         // 避免在评论更新的情况下重复添加
         const replyLocation = document.createElement('span')
         replyLocation.style.marginLeft = '5px'
         replyLocation.innerText = location
+        replyTime.innerText = getCommentTime(item)
         replyTime.appendChild(replyLocation)
       }
     }
